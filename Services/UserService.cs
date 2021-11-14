@@ -17,14 +17,9 @@ using WebApi.Models.Users;
 
 namespace WebApi.Services
 {
-
-
     public class UserService : IUserService
     {
-
-
         private readonly IMapper _mapper;
-
         private readonly AppSettings _appSettings;
         private readonly IDapper _dapper;
 
@@ -65,22 +60,17 @@ namespace WebApi.Services
 
             return user.WithoutPassword();
         }
-
         public async Task<IEnumerable<User>> GetAll()
         {
 
             return await Task.FromResult(_dapper.GetAll<User>($"Select * from [Users]", null, commandType: CommandType.Text));
 
         }
-
         public async Task<User> GetById(int id)
         {
             var result = await Task.FromResult(_dapper.Get<User>($"Select * from [Users] where Id = {id}", null, commandType: CommandType.Text));
             return result;
         }
-
-
-
         public async void Create(CreateRequest model)
         {
 
@@ -109,8 +99,6 @@ namespace WebApi.Services
                     commandType: CommandType.StoredProcedure));
 
         }
-
-
         public async void Update(int id, UpdateRequest model)
         {
             var user = await GetById(id);
@@ -140,7 +128,6 @@ namespace WebApi.Services
 
 
         }
-
         public async void Delete(int id)
         {
 
@@ -153,7 +140,5 @@ namespace WebApi.Services
 
 
         }
-
-
     }
 }
