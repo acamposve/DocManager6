@@ -8,7 +8,7 @@ namespace WebApi.Models.Users
         public string FirstName { get; set; }
         public string LastName { get; set; }
 
-        [EnumDataType(typeof(Role))]
+
         public string Role { get; set; }
 
 

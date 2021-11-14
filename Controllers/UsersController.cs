@@ -10,7 +10,7 @@ using WebApi.Models.Users;
 
 namespace WebApi.Controllers
 {
-    [Authorize]
+   // [Authorize]
     [ApiController]
     [Route("[controller]")]
     public class UsersController : ControllerBase
@@ -38,11 +38,11 @@ namespace WebApi.Controllers
             return Ok(user);
         }
 
-        [Authorize(Roles = Role.Admin)]
+        //[Authorize(Roles = Role.Admin)]
         [HttpGet]
-        public IActionResult GetAll()
+        public async Task<IActionResult> GetAll()
         {
-            var users =  _userService.GetAll();
+            var users =  await _userService.GetAll();
             return Ok(users);
         }
 

@@ -12,11 +12,12 @@ namespace WebApi.Models.Users
         public string LastName { get; set; }
 
         [Required]
-        [EnumDataType(typeof(Role))]
+
+
         public string Role { get; set; }
 
         [Required]
-        [EmailAddress]
+
         public string Username { get; set; }
 
         [Required]

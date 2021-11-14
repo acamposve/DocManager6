@@ -69,7 +69,7 @@ namespace WebApi.Services
         public async Task<IEnumerable<User>> GetAll()
         {
 
-            return await Task.FromResult(_dapper.Get<IEnumerable<User>>($"Select * from [Users]", null, commandType: CommandType.Text));
+            return await Task.FromResult(_dapper.GetAll<User>($"Select * from [Users]", null, commandType: CommandType.Text));
 
         }
 
@@ -84,7 +84,7 @@ namespace WebApi.Services
         public async void Create(CreateRequest model)
         {
 
-            var userBD = await Task.FromResult(_dapper.Get<User>($"Select * from [Users] where Username = {model.Username}", null, commandType: CommandType.Text));
+            var userBD = await Task.FromResult(_dapper.Get<User>($"Select * from [Users] where Username = '{model.Username}'", null, commandType: CommandType.Text));
 
 
 
@@ -115,7 +115,7 @@ namespace WebApi.Services
         {
             var user = await GetById(id);
 
-            var userBD = await Task.FromResult(_dapper.Get<User>($"Select * from [Users] where Username = {model.Username}", null, commandType: CommandType.Text));
+            var userBD = await Task.FromResult(_dapper.Get<User>($"Select * from [Users] where Username = '{model.Username}'", null, commandType: CommandType.Text));
 
                 // validate
                 if (model.Username != user.Username && userBD != null )
@@ -143,8 +143,15 @@ namespace WebApi.Services
 
         public async void Delete(int id)
         {
-            var result = await Task.FromResult(_dapper.Execute($"Delete [Users] Where Id = {id}", null, commandType: CommandType.Text));
-          
+
+            var dbPara = new DynamicParameters();
+            dbPara.Add("id", id);
+
+            var updateArticle = Task.FromResult(_dapper.Update<int>("[dbo].[pa_delete_users]",
+                            dbPara,
+                            commandType: CommandType.StoredProcedure));
+
+
         }
 
 
