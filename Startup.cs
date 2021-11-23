@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using System;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace WebApi
 {
@@ -80,6 +81,16 @@ namespace WebApi
             // configure DI for application services
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IReceiptService, ReceiptService>();
+            services.AddScoped<IReceiptStatusService, ReceiptStatusService>();
+            services.AddScoped<IReceiptsFilesService, ReceiptsFilesService>();
+
+
+            services.Configure<FormOptions>(o => {
+                o.ValueLengthLimit = int.MaxValue;
+                o.MultipartBodyLengthLimit = int.MaxValue;
+                o.MemoryBufferThreshold = int.MaxValue;
+            });
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

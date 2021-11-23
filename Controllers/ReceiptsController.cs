@@ -1,10 +1,14 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.IO;
+using System.Linq;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using WebApi.Interfaces;
 using WebApi.Models.Receipts;
-
+using WebApi.Models.ReceiptsFiles;
 namespace WebApi.Controllers
 {
     [Route("api/[controller]")]
@@ -12,14 +16,15 @@ namespace WebApi.Controllers
     public class ReceiptsController : ControllerBase
     {
         private IReceiptService _service;
+        private IReceiptsFilesService _fileservice;
         private IMapper _mapper;
 
         public ReceiptsController(IReceiptService service,
-            IMapper mapper)
+            IMapper mapper, IReceiptsFilesService fileservice)
         {
             _service = service;
             _mapper = mapper;
-
+            _fileservice = fileservice;
         }
 
         //[Authorize(Roles = Role.Admin)]
@@ -42,11 +47,65 @@ namespace WebApi.Controllers
         }
 
 
-
-        [HttpPost]
-        public IActionResult Create(CreateRequest model)
+        [HttpPost, DisableRequestSizeLimit]
+        public async Task<IActionResult> Upload()
         {
-            _service.Create(model);
+            var formCollection = await Request.ReadFormAsync();
+
+
+
+            try
+            {
+                Models.Receipts.CreateRequest request = new();
+                request.FechaArribo = DateTime.Parse(formCollection["fechaarribo"]);
+                request.CantidadContainers = formCollection["cantidadcontainers"];
+                request.Referencia = formCollection["referencia"];
+                request.Origen = formCollection["origen"];
+                request.Destino = formCollection["destino"];
+                request.Mercancia = formCollection["mercancia"];
+                request.StatusId = int.Parse(formCollection["statusid"]);
+
+                var receiptcreado = await _service.Create(request);
+
+
+
+
+
+                var files = Request.Form.Files;
+                var folderName = Path.Combine("Resources", "Images");
+                var pathToSave = Path.Combine(Directory.GetCurrentDirectory(), folderName);
+                if (files.Any(f => f.Length == 0))
+                {
+                    return BadRequest();
+                }
+                foreach (var file in files)
+                {
+                    var fileName = ContentDispositionHeaderValue.Parse(file.ContentDisposition).FileName.Trim('"');
+                    var fullPath = Path.Combine(pathToSave, fileName);
+                    var dbPath = Path.Combine(folderName, fileName); //you can add this path to a list and then return all dbPaths to the client if require
+                    using (var stream = new FileStream(fullPath, FileMode.Create))
+                    {
+                        file.CopyTo(stream);
+                    }
+
+                    Models.ReceiptsFiles.CreateRequest requestfiles = new();
+                    requestfiles.EmbarqueId = receiptcreado;
+                    requestfiles.Extension = file.ContentType;
+                    requestfiles.Path = fullPath;
+                    requestfiles.Size = int.Parse(file.Length.ToString());
+                    requestfiles.Name = file.FileName;
+                    await _fileservice.Create(requestfiles);
+                }
+                return Ok("All the files are successfully uploaded.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal server error");
+            }
+
+
+
+            //            _service.Create(model);
             return Ok(new { message = "User created" });
         }
 

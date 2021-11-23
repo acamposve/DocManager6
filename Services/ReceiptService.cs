@@ -37,20 +37,19 @@ namespace WebApi.Services
             var result = await Task.FromResult(_dapper.Get<Receipt>($"Select * from [Receipts] where Id = {id}", null, commandType: CommandType.Text));
             return result;
         }
-        public async void Create(CreateRequest model)
+
+
+        public async Task<Receipt> GetByReferencia(string referencia)
         {
+            var result = await Task.FromResult(_dapper.Get<Receipt>($"Select * from [Receipts] where referencia = '{referencia}'", null, commandType: CommandType.Text));
+            return result;
+        }
 
+        public async Task<int> Create(CreateRequest model)
+        {
             var userBD = await Task.FromResult(_dapper.Get<User>($"Select * from [Receipts] where Referencia = '{model.Referencia}'", null, commandType: CommandType.Text));
-
-
-
-
-            // validate
             if (userBD != null)
                 throw new AppException("User with the email '" + model.Referencia + "' already exists");
-
-            // map model to new user object
-            var receipt = _mapper.Map<Receipt>(model);
 
             var dbparams = new DynamicParameters();
             dbparams.Add("Referencia", model.Referencia, DbType.String);
@@ -61,9 +60,11 @@ namespace WebApi.Services
             dbparams.Add("CantidadContainers", model.CantidadContainers, DbType.String);
             dbparams.Add("Mercancia", model.Mercancia, DbType.String);
 
-            var result = await Task.FromResult(_dapper.Insert<int>("[dbo].[pa_insert_receipts]"
-                    , dbparams,
-                    commandType: CommandType.StoredProcedure));
+            var result = await Task.FromResult(_dapper.Insert<int>("[dbo].[pa_insert_receipts]", dbparams, commandType: CommandType.StoredProcedure));
+
+            var receipt = await GetByReferencia(model.Referencia);
+
+            return receipt.id;
 
         }
         public async void Update(int id, UpdateRequest model)

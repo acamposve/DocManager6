@@ -9,7 +9,7 @@ namespace WebApi.Interfaces
     {
         Task<IEnumerable<Receipt>> GetAll();
         Task<Receipt> GetById(int id);
-        void Create(CreateRequest model);
+        Task<int> Create(CreateRequest model);
         void Update(int id, UpdateRequest model);
         void Delete(int id);
     }
