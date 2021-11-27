@@ -17,14 +17,18 @@ namespace WebApi.Controllers
     {
         private IReceiptService _service;
         private IReceiptsFilesService _fileservice;
+        private IReceiptsAccountsService _accountservice;
         private IMapper _mapper;
 
         public ReceiptsController(IReceiptService service,
-            IMapper mapper, IReceiptsFilesService fileservice)
+                                    IMapper mapper,
+                                    IReceiptsFilesService fileservice,
+                                    IReceiptsAccountsService accountservice)
         {
             _service = service;
             _mapper = mapper;
             _fileservice = fileservice;
+            _accountservice = accountservice;
         }
 
         //[Authorize(Roles = Role.Admin)]
@@ -34,6 +38,16 @@ namespace WebApi.Controllers
             var users = await _service.GetAll();
             return Ok(users);
         }
+
+
+
+        [HttpGet("ReceiptsByAccount/{id}")]
+        public async Task<IActionResult> GetAllByAccount(int id)
+        {
+            var users = await _service.GetAllByAccount(id);
+            return Ok(users);
+        }
+
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
@@ -45,6 +59,16 @@ namespace WebApi.Controllers
 
             return Ok(user);
         }
+
+
+
+        [HttpPost("addUsers")]
+        public async Task<IActionResult> AddUsersToReceipt([FromBody] Models.ReceiptsAccounts.CreateRequest usuarios)
+        {
+            await _accountservice.Create(usuarios);
+            return Ok();
+        }
+
 
 
         [HttpPost, DisableRequestSizeLimit]
@@ -67,13 +91,16 @@ namespace WebApi.Controllers
 
                 var receiptcreado = await _service.Create(request);
 
+                //foreach(var accounts in formCollection["userid"].Count())
+                //Models.ReceiptsAccounts.CreateRequest requestAccounts = new();
 
+                //var account = await _accountservice.Create();
 
 
 
                 var files = Request.Form.Files;
                 var folderName = Path.Combine("Resources", "Images");
-                var pathToSave = Path.Combine(Directory.GetCurrentDirectory(), folderName);
+                var pathToSave = @"C:\proyectos\DocManager\UiAngular2021\src\assets\img";//Path.Combine(Directory.GetCurrentDirectory(), folderName);
                 if (files.Any(f => f.Length == 0))
                 {
                     return BadRequest();

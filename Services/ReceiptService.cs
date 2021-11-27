@@ -32,6 +32,14 @@ namespace WebApi.Services
             return await Task.FromResult(_dapper.GetAll<Receipt>($"Select * from [Receipts]", null, commandType: CommandType.Text));
 
         }
+
+        public async Task<IEnumerable<ReceiptsByAccount>> GetAllByAccount(int id)
+        {
+            string sql = $"SELECT        dbo.Users.FirstName, dbo.Users.LastName, dbo.Receipts.Referencia, dbo.Receipts.FechaArribo, dbo.Receipts.Origen, dbo.Receipts.Destino, dbo.Receipts.id FROM dbo.Receipts INNER JOIN dbo.EmbarquesAccounts ON dbo.Receipts.id = dbo.EmbarquesAccounts.EmbarquesId INNER JOIN dbo.Users ON dbo.EmbarquesAccounts.AccountId = dbo.Users.id WHERE (dbo.Users.id = {id})";
+            return await Task.FromResult(_dapper.GetAll<ReceiptsByAccount>(sql, null, commandType: CommandType.Text));
+        }
+
+
         public async Task<Receipt> GetById(int id)
         {
             var result = await Task.FromResult(_dapper.Get<Receipt>($"Select * from [Receipts] where Id = {id}", null, commandType: CommandType.Text));

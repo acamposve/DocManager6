@@ -83,8 +83,7 @@ namespace WebApi
             services.AddScoped<IReceiptService, ReceiptService>();
             services.AddScoped<IReceiptStatusService, ReceiptStatusService>();
             services.AddScoped<IReceiptsFilesService, ReceiptsFilesService>();
-
-
+            services.AddScoped<IReceiptsAccountsService, ReceiptsAccountsService>();
             services.Configure<FormOptions>(o => {
                 o.ValueLengthLimit = int.MaxValue;
                 o.MultipartBodyLengthLimit = int.MaxValue;

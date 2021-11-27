@@ -12,5 +12,6 @@ namespace WebApi.Interfaces
         Task<int> Create(CreateRequest model);
         void Update(int id, UpdateRequest model);
         void Delete(int id);
+        Task<IEnumerable<ReceiptsByAccount>> GetAllByAccount(int id);
     }
 }

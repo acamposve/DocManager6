@@ -10,7 +10,12 @@
       "ProjectGuid": "a2fe74e1-b743-11d0-ae1a-00a0c90fffc3",
       "DisplayName": "Archivos varios",
       "ColorIndex": -1
+    },
+    "3dbab282-e753-4adb-9785-f186297cb51d": {
+      "ProjectGuid": "3dbab282-e753-4adb-9785-f186297cb51d",
+      "DisplayName": "HelpersLibrary",
+      "ColorIndex": 1
     }
   },
-  "NextColorIndex": 1
+  "NextColorIndex": 2
 }
