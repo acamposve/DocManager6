@@ -14,7 +14,7 @@ namespace WebApi.Entities
 
         public string Destino { get; set; }
 
-        public int StatusId { get; set; }
+        public string status { get; set; }
 
         public string CantidadContainers { get; set; }
 

@@ -1,14 +1,15 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.Extensions.Options;
 using System;
 using System.IO;
 using System.Linq;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using WebApi.Helpers;
 using WebApi.Interfaces;
 using WebApi.Models.Receipts;
-using WebApi.Models.ReceiptsFiles;
 namespace WebApi.Controllers
 {
     [Route("api/[controller]")]
@@ -18,15 +19,17 @@ namespace WebApi.Controllers
         private IReceiptService _service;
         private IReceiptsFilesService _fileservice;
         private IReceiptsAccountsService _accountservice;
-        private IMapper _mapper;
+        private readonly AppSettings _appSettings;
 
-        public ReceiptsController(IReceiptService service,
-                                    IMapper mapper,
+        public ReceiptsController(
+                                    IReceiptService service,                        
                                     IReceiptsFilesService fileservice,
-                                    IReceiptsAccountsService accountservice)
+                                    IReceiptsAccountsService accountservice,
+                                    IOptions<AppSettings> appSettings
+                                    )
         {
             _service = service;
-            _mapper = mapper;
+            _appSettings = appSettings.Value;
             _fileservice = fileservice;
             _accountservice = accountservice;
         }
@@ -38,17 +41,18 @@ namespace WebApi.Controllers
             var users = await _service.GetAll();
             return Ok(users);
         }
-
-
-
         [HttpGet("ReceiptsByAccount/{id}")]
         public async Task<IActionResult> GetAllByAccount(int id)
         {
             var users = await _service.GetAllByAccount(id);
             return Ok(users);
         }
-
-
+        [HttpGet("FilesByReceipt/{id}")]
+        public async Task<IActionResult> GetFilesByReceipt(int id)
+        {
+            var users = await _service.GetFilesByReceipt(id);
+            return Ok(users);
+        }
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -59,18 +63,12 @@ namespace WebApi.Controllers
 
             return Ok(user);
         }
-
-
-
         [HttpPost("addUsers")]
         public async Task<IActionResult> AddUsersToReceipt([FromBody] Models.ReceiptsAccounts.CreateRequest usuarios)
         {
             await _accountservice.Create(usuarios);
             return Ok();
         }
-
-
-
         [HttpPost, DisableRequestSizeLimit]
         public async Task<IActionResult> Upload()
         {
@@ -100,7 +98,7 @@ namespace WebApi.Controllers
 
                 var files = Request.Form.Files;
                 var folderName = Path.Combine("Resources", "Images");
-                var pathToSave = @"C:\proyectos\DocManager\UiAngular2021\src\assets\img";//Path.Combine(Directory.GetCurrentDirectory(), folderName);
+                var pathToSave = _appSettings.imgDestino;//Path.Combine(Directory.GetCurrentDirectory(), folderName);
                 if (files.Any(f => f.Length == 0))
                 {
                     return BadRequest();
@@ -135,19 +133,34 @@ namespace WebApi.Controllers
             //            _service.Create(model);
             return Ok(new { message = "User created" });
         }
-
         [HttpPut("{id}")]
         public IActionResult Update(int id, UpdateRequest model)
         {
             _service.Update(id, model);
             return Ok(new { message = "User updated" });
         }
-
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
             _service.Delete(id);
             return Ok(new { message = "User deleted" });
+        }
+        [HttpGet("files/{id:int}")]
+        public async Task<ActionResult> DownloadFile(int id)
+        {
+
+            var pathToSave = _appSettings.imgDestino;
+            var filePath = pathToSave + "/" + "team-1.jpg";
+            // ... code for validation and get the file
+
+            var provider = new FileExtensionContentTypeProvider();
+            if (!provider.TryGetContentType(filePath, out var contentType))
+            {
+                contentType = "application/octet-stream";
+            }
+
+            var bytes = await System.IO.File.ReadAllBytesAsync(filePath);
+            return File(bytes, contentType, Path.GetFileName(filePath));
         }
 
     }

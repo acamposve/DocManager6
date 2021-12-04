@@ -25,34 +25,28 @@ namespace WebApi.Services
             _dapper = dapper;
             _mapper = mapper;
         }
-
         public async Task<IEnumerable<Receipt>> GetAll()
         {
 
             return await Task.FromResult(_dapper.GetAll<Receipt>($"Select * from [Receipts]", null, commandType: CommandType.Text));
 
         }
-
         public async Task<IEnumerable<ReceiptsByAccount>> GetAllByAccount(int id)
         {
-            string sql = $"SELECT        dbo.Users.FirstName, dbo.Users.LastName, dbo.Receipts.Referencia, dbo.Receipts.FechaArribo, dbo.Receipts.Origen, dbo.Receipts.Destino, dbo.Receipts.id FROM dbo.Receipts INNER JOIN dbo.EmbarquesAccounts ON dbo.Receipts.id = dbo.EmbarquesAccounts.EmbarquesId INNER JOIN dbo.Users ON dbo.EmbarquesAccounts.AccountId = dbo.Users.id WHERE (dbo.Users.id = {id})";
+            string sql = $"SELECT        dbo.Receipts.Referencia, dbo.Receipts.FechaArribo, dbo.Receipts.Origen, dbo.Receipts.Destino, dbo.Receipts.id, dbo.ReceiptStatus.status FROM dbo.Receipts INNER JOIN dbo.EmbarquesAccounts ON dbo.Receipts.id = dbo.EmbarquesAccounts.EmbarquesId INNER JOIN dbo.ReceiptStatus ON dbo.Receipts.StatusId = dbo.ReceiptStatus.id WHERE (dbo.EmbarquesAccounts.AccountId = { id })";
             return await Task.FromResult(_dapper.GetAll<ReceiptsByAccount>(sql, null, commandType: CommandType.Text));
         }
-
-
         public async Task<Receipt> GetById(int id)
         {
-            var result = await Task.FromResult(_dapper.Get<Receipt>($"Select * from [Receipts] where Id = {id}", null, commandType: CommandType.Text));
+            var sql = $"SELECT dbo.Receipts.id, dbo.ReceiptStatus.status, dbo.Receipts.Referencia, dbo.Receipts.FechaArribo, dbo.Receipts.Origen, dbo.Receipts.Destino, dbo.Receipts.CantidadContainers, dbo.Receipts.Mercancia FROM dbo.Receipts INNER JOIN dbo.ReceiptStatus ON dbo.Receipts.StatusId = dbo.ReceiptStatus.id WHERE (dbo.Receipts.id = { id})";
+            var result = await Task.FromResult(_dapper.Get<Receipt>(sql, null, commandType: CommandType.Text));
             return result;
         }
-
-
         public async Task<Receipt> GetByReferencia(string referencia)
         {
             var result = await Task.FromResult(_dapper.Get<Receipt>($"Select * from [Receipts] where referencia = '{referencia}'", null, commandType: CommandType.Text));
             return result;
         }
-
         public async Task<int> Create(CreateRequest model)
         {
             var userBD = await Task.FromResult(_dapper.Get<User>($"Select * from [Receipts] where Referencia = '{model.Referencia}'", null, commandType: CommandType.Text));
@@ -98,26 +92,21 @@ namespace WebApi.Services
             dbparams.Add("StatusId", model.StatusId, DbType.Int32);
             dbparams.Add("CantidadContainers", model.CantidadContainers, DbType.String);
             dbparams.Add("Mercancia", model.Mercancia, DbType.String);
-
-            var updateArticle = Task.FromResult(_dapper.Update<int>("[dbo].[pa_update_receipts]",
-                            dbparams,
-                            commandType: CommandType.StoredProcedure));
-
-
-
+            var updateArticle = Task.FromResult(_dapper.Update<int>("[dbo].[pa_update_receipts]", dbparams, commandType: CommandType.StoredProcedure));
         }
         public async void Delete(int id)
         {
-
             var dbPara = new DynamicParameters();
             dbPara.Add("id", id);
-
-            var updateArticle = Task.FromResult(_dapper.Update<int>("[dbo].[pa_delete_receipts]",
-                            dbPara,
-                            commandType: CommandType.StoredProcedure));
-
-
+            var updateArticle = await Task.FromResult(_dapper.Update<int>("[dbo].[pa_delete_receipts]", dbPara, commandType: CommandType.StoredProcedure));
         }
 
+
+
+        public async Task<IEnumerable<FilesByReceipt>> GetFilesByReceipt(int id)
+        {
+            string sql = $"SELECT [id],[Name],[Size],[Extension],[Path],[EmbarqueId] FROM [dbo].[ReceiptFiles] where embarqueid = { id }";
+            return await Task.FromResult(_dapper.GetAll<FilesByReceipt>(sql, null, commandType: CommandType.Text));
+        }
     }
 }

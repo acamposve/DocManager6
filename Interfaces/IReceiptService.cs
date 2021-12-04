@@ -13,5 +13,6 @@ namespace WebApi.Interfaces
         void Update(int id, UpdateRequest model);
         void Delete(int id);
         Task<IEnumerable<ReceiptsByAccount>> GetAllByAccount(int id);
+        Task<IEnumerable<FilesByReceipt>> GetFilesByReceipt(int id);
     }
 }
