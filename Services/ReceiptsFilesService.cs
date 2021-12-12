@@ -52,6 +52,8 @@ namespace WebApi.Services
             dbparams.Add("Path", model.Path, DbType.String);
             dbparams.Add("EmbarqueId", model.EmbarqueId, DbType.Int32);
 
+            dbparams.Add("imageData", model.imageData, DbType.Binary);
+
 
             var result = await Task.FromResult(_dapper.Insert<int>("[dbo].[pa_insert_receiptsfiles]", dbparams, commandType: CommandType.StoredProcedure));
             return result;

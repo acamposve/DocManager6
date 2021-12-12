@@ -1,16 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
-using WebApi.Services;
-using WebApi.Entities;
-using WebApi.Models;
-using WebApi.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
-using AutoMapper;
+using WebApi.Interfaces;
+using WebApi.Models;
 using WebApi.Models.Users;
 
 namespace WebApi.Controllers
 {
-   // [Authorize]
+    // [Authorize]
     [ApiController]
     [Route("[controller]")]
     public class UsersController : ControllerBase

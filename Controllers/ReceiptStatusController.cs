@@ -7,7 +7,7 @@ using WebApi.Models.ReceiptsStatus;
 
 namespace WebApi.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class ReceiptStatusController : ControllerBase
     {
