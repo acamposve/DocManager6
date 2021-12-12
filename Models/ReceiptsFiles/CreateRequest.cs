@@ -14,5 +14,7 @@ namespace WebApi.Models.ReceiptsFiles
         public string Path { get; set; }
         [Required]
         public int EmbarqueId { get; set; }
+[Required]
+        public byte[] imageData { get; set; }
     }
 }

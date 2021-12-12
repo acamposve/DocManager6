@@ -79,11 +79,13 @@ namespace WebApi
             });
 
             // configure DI for application services
+            services.AddSingleton<ILoggerManager, LoggerManager>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IReceiptService, ReceiptService>();
             services.AddScoped<IReceiptStatusService, ReceiptStatusService>();
             services.AddScoped<IReceiptsFilesService, ReceiptsFilesService>();
             services.AddScoped<IReceiptsAccountsService, ReceiptsAccountsService>();
+
             services.Configure<FormOptions>(o => {
                 o.ValueLengthLimit = int.MaxValue;
                 o.MultipartBodyLengthLimit = int.MaxValue;
@@ -107,7 +109,7 @@ namespace WebApi
 
             app.UseDeveloperExceptionPage();
             app.UseSwagger();
-            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "WebApplication2 v1"));
+            app.UseSwaggerUI(c => c.SwaggerEndpoint("/api/swagger/v1/swagger.json", "WebApplication2 v1"));
 
 
             app.UseAuthentication();

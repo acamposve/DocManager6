@@ -1,15 +1,14 @@
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 using AutoMapper;
 using Dapper;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using System.Threading.Tasks;
 using WebApi.Entities;
 using WebApi.Helpers;
 using WebApi.Interfaces;
@@ -22,17 +21,22 @@ namespace WebApi.Services
         private readonly IMapper _mapper;
         private readonly AppSettings _appSettings;
         private readonly IDapper _dapper;
+        private readonly ILoggerManager _logger;
 
         public UserService(IOptions<AppSettings> appSettings, IDapper dapper,
-            IMapper mapper)
+            IMapper mapper, ILoggerManager logger)
         {
             _appSettings = appSettings.Value;
             _dapper = dapper;
             _mapper = mapper;
+            _logger = logger;
         }
 
         public async Task<User> Authenticate(string username, string password)
         {
+            _logger.LogInformation("Metodo Informativo");
+
+
             var user = await Task.FromResult(_dapper.Get<User>($"Select * from [Users] where username = '{username}'", null, commandType: CommandType.Text));
             //return result;
 
