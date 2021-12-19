@@ -34,9 +34,6 @@ namespace WebApi.Services
 
         public async Task<User> Authenticate(string username, string password)
         {
-            _logger.LogInformation("Metodo Informativo");
-
-
             var user = await Task.FromResult(_dapper.Get<User>($"Select * from [Users] where username = '{username}'", null, commandType: CommandType.Text));
             //return result;
 
@@ -77,12 +74,7 @@ namespace WebApi.Services
         }
         public async void Create(CreateRequest model)
         {
-
             var userBD = await Task.FromResult(_dapper.Get<User>($"Select * from [Users] where Username = '{model.Username}'", null, commandType: CommandType.Text));
-
-
-
-
             // validate
             if (userBD != null)
                 throw new AppException("User with the email '" + model.Username + "' already exists");
@@ -96,12 +88,7 @@ namespace WebApi.Services
             dbparams.Add("Username", model.Username, DbType.String);
             dbparams.Add("Role", model.Role, DbType.String);
             dbparams.Add("Password", model.Password, DbType.String);
-
-
-            var result = await Task.FromResult(_dapper.Insert<int>("[dbo].[pa_insert_users]"
-                    , dbparams,
-                    commandType: CommandType.StoredProcedure));
-
+            var result = await Task.FromResult(_dapper.Insert<int>("[dbo].[pa_insert_users]", dbparams, commandType: CommandType.StoredProcedure));
         }
         public async void Update(int id, UpdateRequest model)
         {
@@ -125,24 +112,14 @@ namespace WebApi.Services
             dbPara.Add("Role", user.Role, DbType.String);
             dbPara.Add("Password", user.Password, DbType.String);
 
-            var updateArticle = Task.FromResult(_dapper.Update<int>("[dbo].[pa_update_users]",
-                            dbPara,
-                            commandType: CommandType.StoredProcedure));
-            
-
-
+            var updateArticle = Task.FromResult(_dapper.Update<int>("[dbo].[pa_update_users]",dbPara, commandType: CommandType.StoredProcedure));
         }
         public async void Delete(int id)
         {
 
             var dbPara = new DynamicParameters();
             dbPara.Add("id", id);
-
-            var updateArticle = Task.FromResult(_dapper.Update<int>("[dbo].[pa_delete_users]",
-                            dbPara,
-                            commandType: CommandType.StoredProcedure));
-
-
+            var updateArticle = Task.FromResult(_dapper.Update<int>("[dbo].[pa_delete_users]", dbPara, commandType: CommandType.StoredProcedure));
         }
     }
 }

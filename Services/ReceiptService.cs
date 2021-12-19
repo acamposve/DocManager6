@@ -16,19 +16,21 @@ namespace WebApi.Services
         private readonly IMapper _mapper;
         private readonly AppSettings _appSettings;
         private readonly IDapper _dapper;
+        private readonly ILoggerManager _logger;
         public ReceiptService(
-            IOptions<AppSettings> appSettings, 
+            IOptions<AppSettings> appSettings,
             IDapper dapper,
-            IMapper mapper)
+            IMapper mapper, ILoggerManager logger)
         {
             _appSettings = appSettings.Value;
             _dapper = dapper;
             _mapper = mapper;
+            _logger = logger;
         }
         public async Task<IEnumerable<Receipt>> GetAll()
         {
-
-            return await Task.FromResult(_dapper.GetAll<Receipt>($"Select * from [Receipts]", null, commandType: CommandType.Text));
+            var sql = $"SELECT dbo.Receipts.id, dbo.Receipts.Referencia, dbo.Receipts.FechaArribo, dbo.Receipts.Origen, dbo.Receipts.Destino, dbo.ReceiptStatus.status FROM dbo.Receipts INNER JOIN dbo.ReceiptStatus ON dbo.Receipts.statusid = dbo.ReceiptStatus.id";
+            return await Task.FromResult(_dapper.GetAll<Receipt>(sql, null, commandType: CommandType.Text));
 
         }
         public async Task<IEnumerable<ReceiptsByAccount>> GetAllByAccount(int id)
@@ -71,28 +73,41 @@ namespace WebApi.Services
         }
         public async void Update(int id, UpdateRequest model)
         {
-            var user = await GetById(id);
 
-            var userBD = await Task.FromResult(_dapper.Get<Receipt>($"Select * from [Receipts] where Referencia = '{model.Referencia}'", null, commandType: CommandType.Text));
+            try
+            {
+                _logger.LogInformation("id es " + id);
 
-            // validate
-            if (model.Referencia != user.Referencia && userBD != null)
-                throw new AppException("User with the email '" + model.Referencia + "' already exists");
+                _logger.LogInformation("modelo es " + model);
+
+                var user = await GetById(id);
+
+                var userBD = await Task.FromResult(_dapper.Get<Receipt>($"Select * from [Receipts] where Referencia = '{model.Referencia}'", null, commandType: CommandType.Text));
+
+                // validate
+                if (model.Referencia != user.Referencia && userBD != null)
+                    throw new AppException("User with the email '" + model.Referencia + "' already exists");
 
 
-            // copy model to user and save
-            _mapper.Map(model, user);
 
-            var dbparams = new DynamicParameters();
-            dbparams.Add("id", user.id);
-            dbparams.Add("Referencia", model.Referencia, DbType.String);
-            dbparams.Add("FechaArribo", model.FechaArribo, DbType.DateTime);
-            dbparams.Add("Origen", model.Origen, DbType.String);
-            dbparams.Add("Destino", model.Destino, DbType.String);
-            dbparams.Add("StatusId", model.StatusId, DbType.Int32);
-            dbparams.Add("CantidadContainers", model.CantidadContainers, DbType.String);
-            dbparams.Add("Mercancia", model.Mercancia, DbType.String);
-            var updateArticle = Task.FromResult(_dapper.Update<int>("[dbo].[pa_update_receipts]", dbparams, commandType: CommandType.StoredProcedure));
+                var dbparams = new DynamicParameters();
+                dbparams.Add("id", user.id);
+                dbparams.Add("Referencia", model.Referencia, DbType.String);
+                dbparams.Add("FechaArribo", model.FechaArribo, DbType.DateTime);
+                dbparams.Add("Origen", model.Origen, DbType.String);
+                dbparams.Add("Destino", model.Destino, DbType.String);
+                dbparams.Add("StatusId", model.StatusId, DbType.Int32);
+                dbparams.Add("CantidadContainers", model.CantidadContainers, DbType.String);
+                dbparams.Add("Mercancia", model.Mercancia, DbType.String);
+                var updateArticle = Task.FromResult(_dapper.Update<int>("[dbo].[pa_update_receipts]", dbparams, commandType: CommandType.StoredProcedure));
+            }
+            catch (System.Exception ex)
+            {
+                _logger.LogError(ex.Message + " " + ex.InnerException);
+
+                throw;
+            }
+
         }
         public async void Delete(int id)
         {
@@ -108,5 +123,20 @@ namespace WebApi.Services
             string sql = $"SELECT [id],[Name],[Size],[Extension],[Path],[EmbarqueId] FROM [dbo].[ReceiptFiles] where embarqueid = { id }";
             return await Task.FromResult(_dapper.GetAll<FilesByReceipt>(sql, null, commandType: CommandType.Text));
         }
+
+        public async Task<IEnumerable<AccountByReceipt>> GetAccountByReceipt(int id)
+        {
+            string sql = $"SELECT dbo.Users.id, dbo.Users.FirstName, dbo.Users.LastName FROM dbo.EmbarquesAccounts INNER JOIN dbo.Users ON dbo.EmbarquesAccounts.AccountId = dbo.Users.id WHERE (dbo.EmbarquesAccounts.EmbarquesId = { id })";
+            return await Task.FromResult(_dapper.GetAll<AccountByReceipt>(sql, null, commandType: CommandType.Text));
+        }
+
+
+        public async Task<IEnumerable<AccountByReceipt>> GetAccountNotInReceipt(int id)
+        {
+            string sql = $"select u.id, u.FirstName, u.lastname from users u where u.id not in (SELECT EmbarquesAccounts.AccountId FROM dbo.EmbarquesAccounts INNER JOIN dbo.Users ON dbo.EmbarquesAccounts.AccountId = dbo.Users.id WHERE (dbo.EmbarquesAccounts.EmbarquesId = { id }))";
+            return await Task.FromResult(_dapper.GetAll<AccountByReceipt>(sql, null, commandType: CommandType.Text));
+        }
+
+        
     }
 }

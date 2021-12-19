@@ -6,5 +6,6 @@ namespace WebApi.Interfaces
     public interface IReceiptsAccountsService
     {
         Task<int> Create(CreateRequest model);
+        Task<int> CreateUnique(string embarqueid, string accountid);
     }
 }

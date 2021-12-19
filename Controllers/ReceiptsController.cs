@@ -71,12 +71,25 @@ namespace WebApi.Controllers
 
             return Ok(user);
         }
+        
+        
         [HttpPost("addUsers")]
         public async Task<IActionResult> AddUsersToReceipt([FromBody] Models.ReceiptsAccounts.CreateRequest usuarios)
         {
             await _accountservice.Create(usuarios);
             return Ok();
         }
+
+
+        [HttpPost("addSingleUser")]
+        public async Task<IActionResult> AddUserToReceipt([FromBody] Models.ReceiptsAccounts.CreateSingle usuarios)
+        {
+            await _accountservice.CreateUnique(usuarios);
+            return Ok();
+        }
+
+
+
         [HttpPost, DisableRequestSizeLimit]
         public async Task<IActionResult> Upload()
         {
@@ -180,10 +193,114 @@ namespace WebApi.Controllers
                 return StatusCode(500, "Internal server error");
             }
         }
-        [HttpPut("{id}")]
-        public IActionResult Update(int id, UpdateRequest model)
+        [HttpPut]
+        public async Task<IActionResult> Update()
         {
-            _service.Update(id, model);
+            var formCollection = await Request.ReadFormAsync();
+
+
+
+            try
+            {
+                Models.Receipts.UpdateRequest request = new Models.Receipts.UpdateRequest();
+                request.FechaArribo = DateTime.Parse(formCollection["fechaarribo"]);
+                request.CantidadContainers = formCollection["cantidadcontainers"];
+                request.Referencia = formCollection["referencia"];
+                request.Origen = formCollection["origen"];
+                request.Destino = formCollection["destino"];
+                request.Mercancia = formCollection["mercancia"];
+                request.StatusId = int.Parse(formCollection["statusid"]);
+                request.id = int.Parse(formCollection["id"]);
+                var receiptcreado = int.Parse(formCollection["id"]);
+
+
+
+
+                _service.Update(request.id, request);
+                //foreach(var accounts in formCollection["userid"].Count())
+                //Models.ReceiptsAccounts.CreateRequest requestAccounts = new();
+
+                //var account = await _accountservice.Create();
+
+
+
+                var files = Request.Form.Files;
+                var folderName = Path.Combine("Resources", "Images");
+
+
+                _logger.LogInformation("Metodo Informativo" + Path.Combine(Directory.GetCurrentDirectory()));
+                var pathToSave = _appSettings.imgDestino;//Path.Combine(Directory.GetCurrentDirectory(), folderName);
+
+                _logger.LogInformation("Metodo Informativo" + pathToSave);
+
+
+
+
+                //cancellation token
+
+
+                if (files.Any(f => f.Length == 0))
+                {
+                    return BadRequest();
+                }
+                foreach (var file in files)
+                {
+                    var fileName = ContentDispositionHeaderValue.Parse(file.ContentDisposition).FileName.Trim('"');
+                    var fullPath = Path.Combine(pathToSave, fileName);
+
+                    _logger.LogInformation("ruta completa " + fullPath);
+
+                    byte[] imageData = null;
+
+
+
+
+
+
+                    var dbPath = Path.Combine(folderName, fileName); //you can add this path to a list and then return all dbPaths to the client if require
+                    using (var stream = new FileStream(dbPath, FileMode.Create))
+                    {
+                        file.CopyTo(stream);
+                    }
+
+                    var auth = new FirebaseAuthProvider(new FirebaseConfig(apikey));
+                    var a = await auth.SignInWithEmailAndPasswordAsync(authEmail, authPass);
+                    Guid obj = Guid.NewGuid();
+                    var streamToFb = new FileStream(dbPath, FileMode.Open);
+                    var upload = new FirebaseStorage(bucket,
+                        new FirebaseStorageOptions
+                        {
+                            AuthTokenAsyncFactory = () => Task.FromResult(a.FirebaseToken),
+                            ThrowOnCancel = true
+                        }
+                        ).Child(obj.ToString())
+
+
+                        .PutAsync(streamToFb);
+
+
+
+                    // Await the task to wait until upload is completed and get the download url
+                    var downloadUrl = await upload;
+                    Models.ReceiptsFiles.CreateRequest requestfiles = new Models.ReceiptsFiles.CreateRequest();
+                    requestfiles.EmbarqueId = receiptcreado;
+                    requestfiles.Extension = file.ContentType;
+                    requestfiles.Path = downloadUrl;
+                    requestfiles.Size = int.Parse(file.Length.ToString());
+                    requestfiles.Name = downloadUrl;
+                    requestfiles.imageData = imageData;
+                    await _fileservice.Create(requestfiles);
+                }
+                return Ok(new { message = "All the files are successfully uploaded." });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message + " " + ex.InnerException);
+
+                return StatusCode(500, "Internal server error");
+            }
+
+
             return Ok(new { message = "User updated" });
         }
         [HttpDelete("{id}")]
@@ -192,6 +309,17 @@ namespace WebApi.Controllers
             _service.Delete(id);
             return Ok(new { message = "User deleted" });
         }
+
+
+
+        [HttpDelete("DeleteReceiptFile/{id}")]
+        public IActionResult DeleteReceiptFile(int id)
+        {
+            _fileservice.Delete(id);
+            return Ok(new { message = "User deleted" });
+        }
+
+
         [HttpGet("files/{id:int}")]
         public async Task<ActionResult> DownloadFile(int id)
         {
@@ -235,6 +363,20 @@ namespace WebApi.Controllers
         }
 
 
+
+        [HttpGet("accounts/{id:int}")]
+        public async Task<ActionResult> GetAccountsByReceipt(int id)
+        {
+            var users = await _service.GetAccountByReceipt(id);
+            return Ok(users);
+        }
+
+        [HttpGet("accountsnptinreceipt/{id:int}")]
+        public async Task<ActionResult> GetAccountsNotReceipt(int id)
+        {
+            var users = await _service.GetAccountNotInReceipt(id);
+            return Ok(users);
+        }
 
     }
 }
