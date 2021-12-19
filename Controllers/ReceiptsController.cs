@@ -12,6 +12,8 @@ using System.Threading.Tasks;
 using WebApi.Helpers;
 using WebApi.Interfaces;
 using WebApi.Models.Receipts;
+using WebApi.Models.ReceiptsAccounts;
+
 namespace WebApi.Controllers
 {
     [Route("[controller]")]
@@ -318,6 +320,17 @@ namespace WebApi.Controllers
             _fileservice.Delete(id);
             return Ok(new { message = "User deleted" });
         }
+
+
+
+
+        [HttpPost("DeleteReceiptAccount")]
+        public IActionResult DeleteReceiptAccount([FromBody] CreateSingle model)
+        {
+            _accountservice.Delete(model.embarqueid, model.accountid);
+            return Ok(new { message = "User deleted" });
+        }
+
 
 
         [HttpGet("files/{id:int}")]

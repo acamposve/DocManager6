@@ -35,7 +35,27 @@
       "ProjectGuid": "d555086a-22cc-4869-94f0-4d39ee692d1b",
       "DisplayName": "DocManager.Infrastructure.IoC",
       "ColorIndex": 5
+    },
+    "c442d0e9-3874-48d4-84f7-6c17758828fb": {
+      "ProjectGuid": "c442d0e9-3874-48d4-84f7-6c17758828fb",
+      "DisplayName": "DocManager.Application",
+      "ColorIndex": 6
+    },
+    "64e69da6-bb4c-41c9-9ddd-fe93c0ddad28": {
+      "ProjectGuid": "64e69da6-bb4c-41c9-9ddd-fe93c0ddad28",
+      "DisplayName": "DocManager.Domain",
+      "ColorIndex": 7
+    },
+    "57021c2f-b2b9-4c96-ae9e-16d59b3491c4": {
+      "ProjectGuid": "57021c2f-b2b9-4c96-ae9e-16d59b3491c4",
+      "DisplayName": "DocManager.Infrastructure.Data",
+      "ColorIndex": 8
+    },
+    "8e495349-851b-4bbf-a3eb-66896a02f13d": {
+      "ProjectGuid": "8e495349-851b-4bbf-a3eb-66896a02f13d",
+      "DisplayName": "DocManager.Infrastructure.IoC",
+      "ColorIndex": 9
     }
   },
-  "NextColorIndex": 6
+  "NextColorIndex": 10
 }

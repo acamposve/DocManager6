@@ -28,16 +28,13 @@ namespace WebApi.Services
 
 
 
-        public async Task<int> CreateUnique(string embarqueid, string accountid)
+        public async Task<int> CreateUnique(CreateSingle model)
         {
-            CreateSingle model = new CreateSingle();
-
-            model.embarqueid = int.Parse(embarqueid);
-            model.userid = int.Parse(accountid);
+            
 
             var dbparams = new DynamicParameters();
-            dbparams.Add("EmbarquesId", model.embarqueid, DbType.Int32);
-            dbparams.Add("AccountId", model.userid, DbType.Int32);
+            dbparams.Add("EmbarquesId", int.Parse(model.embarqueid), DbType.Int32);
+            dbparams.Add("AccountId", model.accountid, DbType.Int32);
             var result = await Task.FromResult(_dapper.Insert<int>("[dbo].[pa_insert_embarquesaccounts]", dbparams, commandType: CommandType.StoredProcedure));
             return 0;
         }
@@ -53,6 +50,18 @@ namespace WebApi.Services
                 dbparams.Add("AccountId", model.userid[i], DbType.Int32);
                 var result = await Task.FromResult(_dapper.Insert<int>("[dbo].[pa_insert_embarquesaccounts]", dbparams, commandType: CommandType.StoredProcedure));
             }
+            return 0;
+        }
+
+        public async Task<int> Delete(string embarqueid, int accountid)
+        {
+            int embarque = int.Parse(embarqueid);
+
+
+            var dbparams = new DynamicParameters();
+            dbparams.Add("EmbarquesId", embarque, DbType.Int32);
+            dbparams.Add("AccountId", accountid, DbType.Int32);
+            var result = await Task.FromResult(_dapper.Update<int>("[dbo].[pa_delete_embarques_accounts]", dbparams, commandType: CommandType.StoredProcedure));
             return 0;
         }
     }

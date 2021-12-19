@@ -5,9 +5,9 @@ namespace WebApi.Models.ReceiptsAccounts
     public class CreateSingle
     {
         [Required]
-        public int embarqueid { get; set; }
+        public string embarqueid { get; set; }
 
         [Required]
-        public int userid { get; set; }
+        public int accountid { get; set; }
     }
 }
