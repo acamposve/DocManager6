@@ -14,5 +14,8 @@ namespace WebApi.Interfaces
         void Delete(int id);
         Task<IEnumerable<ReceiptsByAccount>> GetAllByAccount(int id);
         Task<IEnumerable<FilesByReceipt>> GetFilesByReceipt(int id);
+        Task<IEnumerable<AccountByReceipt>> GetAccountByReceipt(int id);
+
+        Task<IEnumerable<AccountByReceipt>> GetAccountNotInReceipt(int id);
     }
 }

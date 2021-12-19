@@ -9,7 +9,7 @@ using WebApi.Models.ReceiptsAccounts;
 
 namespace WebApi.Services
 {
-    
+
 
     public class ReceiptsAccountsService : IReceiptsAccountsService
     {
@@ -26,29 +26,34 @@ namespace WebApi.Services
             _mapper = mapper;
         }
 
-       
 
 
+        public async Task<int> CreateUnique(string embarqueid, string accountid)
+        {
+            CreateSingle model = new CreateSingle();
+
+            model.embarqueid = int.Parse(embarqueid);
+            model.userid = int.Parse(accountid);
+
+            var dbparams = new DynamicParameters();
+            dbparams.Add("EmbarquesId", model.embarqueid, DbType.Int32);
+            dbparams.Add("AccountId", model.userid, DbType.Int32);
+            var result = await Task.FromResult(_dapper.Insert<int>("[dbo].[pa_insert_embarquesaccounts]", dbparams, commandType: CommandType.StoredProcedure));
+            return 0;
+        }
 
 
 
         public async Task<int> Create(CreateRequest model)
         {
-            for (int i = 0; i < model.userid.Length; i++) {
+            for (int i = 0; i < model.userid.Length; i++)
+            {
                 var dbparams = new DynamicParameters();
                 dbparams.Add("EmbarquesId", model.embarqueid, DbType.Int32);
                 dbparams.Add("AccountId", model.userid[i], DbType.Int32);
-
-
                 var result = await Task.FromResult(_dapper.Insert<int>("[dbo].[pa_insert_embarquesaccounts]", dbparams, commandType: CommandType.StoredProcedure));
-
             }
-
-
-
             return 0;
-
         }
-
     }
 }

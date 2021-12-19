@@ -14,14 +14,16 @@ namespace WebApi.Services
         private readonly IMapper _mapper;
         private readonly AppSettings _appSettings;
         private readonly IDapper _dapper;
+        private readonly ILoggerManager _logger;
         public ReceiptsFilesService(
             IOptions<AppSettings> appSettings,
             IDapper dapper,
-            IMapper mapper)
+            IMapper mapper, ILoggerManager logger)
         {
             _appSettings = appSettings.Value;
             _dapper = dapper;
             _mapper = mapper;
+            _logger = logger;
         }
 
         //public async Task<IEnumerable<Receipt>> GetAll()
@@ -90,17 +92,20 @@ namespace WebApi.Services
 
 
         //}
-        //public async void Delete(int id)
-        //{
+        public async void Delete(int id)
+        {
+            try
+            {
+            var dbPara = new DynamicParameters();
+            dbPara.Add("id", id);
+            var updateArticle = Task.FromResult(_dapper.Update<int>("[dbo].[pa_delete_receiptfile]", dbPara, commandType: CommandType.StoredProcedure));
+            }
+            catch (System.Exception ex)
+            {
+                _logger.LogError(ex.Message + " " + ex.InnerException);
+                throw;
+            }
 
-        //    var dbPara = new DynamicParameters();
-        //    dbPara.Add("id", id);
-
-        //    var updateArticle = Task.FromResult(_dapper.Update<int>("[dbo].[pa_delete_receipts]",
-        //                    dbPara,
-        //                    commandType: CommandType.StoredProcedure));
-
-
-        //}
+        }
     }
 }
